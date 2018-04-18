@@ -1,0 +1,111 @@
+Zadanie A
+	R1#inter loopback 1
+		R1#ip add 200.200.200.1 255.255.255.0
+		R1#no sh	
+	R1#inter loop 2
+		R1#ip add 200.200.201.1 255.255.255.0
+		R1#no sh
+	R1#inte se 0/0/0
+		R1#ip add 100.100.100.1 255.255.255.0
+		R1#clock rate 128000
+		R1#no sh
+	R1#ip routing 
+	R1#ip classless
+	R1#key chain nazwa
+		key 2
+		key-string 0987654321
+	R1#router rip
+		no auto-summary
+		network 200.200.200.0
+		network 200.200.201.0
+		network 100.100.100.0
+		version	2
+		ip rip authentication key-chain nazwa
+		ip rip authentication mode md5
+	R1#ip route 200.200.202.0 255.255.254.0 100.100.101.1 160 
+
+	R2#inter loopback 1
+                R1#ip add 200.200.202.1 255.255.255.0
+                R1#no sh
+        R2#inter loop 2
+                R1#ip add 200.200.203.1 255.255.255.0
+                R1#no sh
+	R2#inter se 0/0/0
+		R2#ip add 100.100.100.2 255.255.255.0
+		R2#clock rate 128000
+		R2#no sh
+	R2#ip routing
+        R2#ip classless
+        R2#key chain nazwa
+                key 2
+                key-string 0987654321
+        R2#router rip
+                no auto-summary
+                network 200.200.202.0
+                network 200.200.203.0
+                network 100.100.101.0
+                version 2
+		ip rip authentication key-chain nazwa
+                ip rip authentication mode md5
+        R1#ip route 200.200.200.0 255.255.254.0 100.100.100.1 160
+
+
+Zadanie B
+
+	R1#inter fa 0/0
+		ip add 200.200.200.2 255.255.255.0
+		no sh
+	R1#inter fa 0/1 
+		ip add 200.200.201.1 255.255.255.0
+		no sh
+	R1#ip route 0.0.0.0 0.0.0.0 192.168.1.1
+        R1#router ospf 150
+                network 200.200.201.0 0.0.0.255 area 0
+                network 200.200.200.0 0.0.0.255 area 0
+	
+
+	R2#inter fa 0/0
+		ip add 200.200.202.1 255.255.255.0
+		no sh
+	R2#inter fa 0/1 
+		ip add 200.200.201.2 255.255.255.0
+		no sh
+	R2#ip route 0.0.0.0 0.0.0.0 192.168.1.1
+	R2#router ospf 150	
+		network 200.200.201.0 0.0.0.255	area 0
+		network 200.200.202.0 0.0.0.255 area 0
+
+Zmiana priorytetu:
+	sh ip ospf neighbour
+	sh ip ospf interface
+	R2#ip ospf priority 0
+	
+Zmiana kosztu:
+	R2#inter fa 0/0 
+		ip ospf cost 35
+
+Zmiana Area:
+	
+	R1#router ospf 150
+                network 200.200.201.0 0.0.0.255 area 1
+                network 200.200.200.0 0.0.0.255 area 0
+		area 1 virtual-link 5.5.5.5
+
+	R2#router ospf 150
+                network 200.200.201.0 0.0.0.255 area 1
+                network 200.200.202.0 0.0.0.255 area 2
+		area 1 virtual-link OSPF_ID 
+#sh ip ospf inter
+	
+
+Zadanie C:
+			RIP		RIP+OSPF	OSPF
+	Stacja PC <->    R1      <->     R2     <->    R3    <-> Stacja PC:
+	Prawidlowo zaadresowac
+	
+Redystrybucja RIP to OSPF
+	R2#router ospf 4
+		redistribute rip metric 170 subnets
+	R2#router rip
+		redistribute ospf 4 metric 11
+

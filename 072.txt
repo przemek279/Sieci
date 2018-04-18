@@ -1,0 +1,72 @@
+Zadanie A
+
+int fa 0/0
+	ip add 200.200.200.1 255.255.255.0
+	no sh
+
+int fa 0/1
+	ip add 200.200.201.1 255.255.255.0
+	no sh
+
+ip routing
+
+access-list 90 deny any
+access-list 70 deny host 10.10.10.1
+access-list 70 permit any
+access-list 70 remark To jest opis ACL-ki
+access-list 80 deny 10.10.10.0 0.0.0.255
+
+int fa 0/0
+	ip access-group 90 in
+
+
+no access-list standard 90
+
+int fa 0/0
+	no ip access-group 90 in
+
+Przebudowa numeracji ACL
+ip access-list resequence nr_ACL new_nr_ACL przyrost
+
+ip access-list standard 70
+	26 deny host 10.10.10.1
+	no 26
+
+#sh access-list inter fa 0/0 in
+#sh access-list 70
+#clear access-list counter
+
+
+Zadanie B:
+
+
+access-list 190 deny tcp any 10.10.10.0 0.0.0.255 eq 23
+		    Prot source  destygnation     Port
+access-list 190 deny tcp 10.1.1.1 0.0.0.1 eq 23  200.200.200.1 0.0.0.1 eq 100 
+access-list 190 deny tcp host 10.10.10.1 any 
+access-list 190 permit ip any any
+ 
+#show access-lists 
+
+
+int fa 0/0
+	ip access-group 190 in
+	no ip access-group 190 in 
+
+
+Zadanie C:
+
+
+IP access-list standard moja_lista 
+	deny 10.10.10.1 0.0.0.0
+	permit 10.10.10.2 0.0.0.0
+	exit
+
+IP access-list extended moja_lista2
+	deny TCP 10.10.10.1 0.0.0.0 20.10.10.1 0.0.0.0 eq www
+	exit
+
+int fa 0/0
+	access-group moja_lista2 in
+
+#sh access-list

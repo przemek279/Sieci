@@ -1,0 +1,28 @@
+Zadanie A
+
+en
+conf t
+inter vl 1
+ip add 192.168.123.199 255.255.255.0
+no sh
+ex
+
+line vty 0 15
+password HASLO
+login
+transpo input telnet
+exit
+
+no aaa new-model
+
+enable password TUREK
+
+ip domain-name filipek
+hostname SW1
+crypto key gener rsa
+
+username SIECI privi 15 password 0 SIECI
+line vty 0 15
+transport input ssh
+exit
+
