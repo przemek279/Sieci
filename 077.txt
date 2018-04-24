@@ -1,0 +1,239 @@
+Zadanie A:
+
+R1#hostname R1
+   inter loopback 1
+    ip add 200.200.205.0 255.255.255.0
+    no sh
+   inter fa0/1
+    ip add 200.200.203.1 255.255.255.0
+    no sh
+   inter fa 0/0
+    ip add 200.200.201.2 255.255.255.0
+    no sh
+    exit
+
+R2#hostname R2
+   inter loopback 1
+    ip add 200.200.206.1 255.255.255.0
+    no sh
+   inter fa 0/0
+    ip add 200.200.201.1 255.255.255.0
+    no sh
+   inter fa 0/1
+    ip add 200.200.202.1 255.255.255.0
+    no sh
+    exit
+
+R3#hostname R3
+   inter loopback 1
+    ip add 200.200.204.0 255.255.255.0
+    no sh
+   inter fa 0/0
+    ip add 200.200.202.2 255.255.255.0
+    no sh
+   inter fa 0/1
+    ip add 200.200.203.2 255.255.255.0
+    no sh
+    exit
+
+
+Zadanie B:
+
+Na wszystkich router'ach:
+R?#do debug ip bgp
+   ip routing
+
+R1#router bgp 65005
+    neighbor 200.200.201.1 remote-as 65005
+    neighbor 200.200.203.2 remote-as 65005
+    network 200.200.205.0
+    network 200.200.203.0
+    network 200.200.201.0
+
+
+R2#router bgp 65005
+    neighbor 200.200.201.2 remote-as 65005
+    neighbor 200.200.202.2 remote-as 65005
+    network 200.200.206.0
+    network 200.200.201.0
+    network 200.200.202.0
+    
+
+R3#router bgp 65005
+    neighbor 200.200.203.1 remote-as 65005
+    neighbor 200.200.202.1 remote-as 65005
+    network 200.200.204.0
+    network 200.200.202.0
+    network 200.200.203.0
+
+
+######Testy######
+sh ip bgp
+sh ip bgp neighbors
+sh ip protocol
+sh ip bgp update-group
+
+sh ip route
+
+
+
+
+Zadanie C:
+
+####Należy przepiąć topologię i wyczyścić zresetować routery
+write erase
+reload
+
+R1#ho R1 
+   int fa 0/0 
+    ip addr 200.200.201.2 255.255.255.0 
+    no sh 
+    exit 
+   int lo 1 
+    ip addr 200.200.203.1 255.255.255.0 
+    no sh 
+    exit 
+   int lo 2 
+    ip addr 200.200.205.1 255.255.255.0 
+    no sh 
+    exit 
+   ip routing 
+   router bgp 65005 
+    neighbor 200.200.201.1 remote-as 65005 
+    no synchronization 
+    network 200.200.201.0 
+    network 200.200.203.0 
+    network 200.200.205.0 
+    no auto-summary 
+    end 
+   debug ip bgp 
+
+
+R2#ho R2 
+   int fa 0/0 
+    ip addr 200.200.201.1 255.255.255.0 
+    no sh 
+    exit 
+   int fa 0/1 
+    ip addr 200.200.202.1 255.255.255.0 
+    no sh 
+    exit 
+   ip routing 
+   router bgp 65005 
+    no synchronization 
+    network 200.200.201.0 
+    network 200.200.202.0 
+    neighbor 200.200.201.2 remote-as 65005 
+    neighbor 200.200.201.2 route-reflector-client 
+    neighbor 200.200.202.2 remote-as 65005 
+    neighbor 200.200.202.2 route-reflector-client 
+    no auto-summary 
+    end 
+   debug ip bgp 
+
+
+R3#ho R3 
+   int fa 0/0 
+    ip addr 200.200.202.2 255.255.255.0 
+    no sh 
+    exit 
+   int lo 1 
+    ip addr 200.200.206.1 255.255.255.0 
+    no sh 
+    exit 
+   int lo 2 
+    ip addr 200.200.204.1 255.255.255.0
+    no sh
+    exit
+   ip routing 
+   router bgp 65005 
+    no synchronization 
+    neighbor 200.200.202.1 remote-as 65005 
+    network 200.200.202.0 
+    network 200.200.206.0 
+    network 200.200.204.0 
+    no auto-summary 
+    end 
+   debug ip bgp 
+
+
+Zadanie D:
+###Topologi się nie zmienia, wystarczy tylko zrestartować router####
+write erase
+reload
+
+R1#ho R1 
+   int fa 0/0 
+    ip addr 200.200.201.2 255.255.255.0 
+    no sh 
+    exit 
+   int lo 1 
+    ip addr 200.200.203.1 255.255.255.0 
+    no sh 
+    exit 
+   int lo 2 
+    ip addr 200.200.205.1 255.255.255.0 
+    no sh 
+    exit 
+   ip routing 
+   router bgp 65001 
+    bgp confederation identifier 100 
+    bgp confederation peers 65002 
+    neighbor 200.200.201.1 remote-as 65002 
+    no synchronization 
+    network 200.200.201.0 
+    network 200.200.203.0 
+    network 200.200.205.0 
+    no auto-summary 
+    end 
+   debug ip bgp
+
+
+
+R2#ho R2 
+   int fa 0/0   
+    ip addr 200.200.201.1 255.255.255.0 
+    no sh 
+    exit 
+   int fa 0/1 
+    ip addr 200.200.202.1 255.255.255.0 
+    no sh
+    exit 
+   ip routing 
+   router bgp 65002 
+    bgp confederation identifier 100 
+    bgp confederation peers 65001 
+    neighbor 200.200.201.2 remote-as 65001 
+    no synchronization 
+    network 200.200.201.0 
+    network 200.200.202.0 
+    neighbor 200.200.202.2 remote-as 200 
+    neighbor 200.200.202.2 remove-private-AS 
+    no auto-summary 
+    end 
+   debug ip bgp 
+
+
+R3#ho R3 
+   int fa 0/0 
+    ip addr 200.200.202.2 255.255.255.0 
+    no sh 
+    exit 
+   int lo 1 
+    ip addr 200.200.206.1 255.255.255.0 
+    no sh 
+    exit 
+   int lo 2 
+    ip addr 200.200.204.1 255.255.255.0 
+    no sh
+    exit   
+   ip routing 
+   router bgp 200 
+    no synchronization 
+    neighbor 200.200.202.1 remote-as 100 
+    network 200.200.202.0 
+    network 200.200.206.0 
+    network 200.200.204.0 
+    no auto-summary 
+    end 
+ 
